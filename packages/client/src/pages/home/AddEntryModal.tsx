@@ -4,7 +4,6 @@ import {
   ButtonGroup,
   Collapse,
   FormControl,
-  FormControlLabel,
   InputLabel,
   MenuItem,
   OutlinedInput,
@@ -13,33 +12,29 @@ import {
   Typography,
 } from '@mui/material'
 import { useMutation } from '@apollo/client'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
-import {
-  CreateProduct,
-  FindAllProductsMatchModel,
-} from '../../modules/products'
-import { MODAL_BOX_STYLE } from './constants'
 import { CreateDataEntry } from '../../modules/entries'
-import { CreateAccount, FindAllAccountsMatchName } from '../../modules/accounts'
-import { Center, ErrorMessage, QueryInput } from '../../components'
+import { CreateAccount, FindAllAccounts } from '../../modules/accounts'
+import { CreateProduct, FindAllProducts } from '../../modules/products'
+
+import { LIFECYCLE_STATES, MODAL_BOX_STYLE, NEW_ITEM_MARKER } from './constants'
+import { Center, ErrorMessage, QuerySelect } from '../../components'
 
 import type {
   Account,
-  BaseResponse,
   BaseResponseError,
   CreateAccountInput,
   CreateAccountResponse,
   CreateDataEntryInput,
+  CreateDataEntryResponse,
   CreateProductInput,
   CreateProductResponse,
-  FindAllAccountsMatchNameResult,
-  FindAllProductsMatchModelResult,
+  FindAllAccountsResult,
+  FindAllProductsResult,
   LifeCycleState,
   Product,
 } from '../../types'
-
-const ExpandButton = React.lazy(() => import('../../components/ExpandButton'))
 
 const initProductState: Product = {
   productName: '',
@@ -66,18 +61,16 @@ export const AddEntryModal: React.FC<AddEntryModalProps> = ({ exit }) => {
   const [error, setError] = useState<string>('')
 
   const [product, setProduct] = useState<Product>(initProductState)
-  const [productQueried, setProductQueried] = useState<boolean>(false)
   const [productInfoVisible, setProductInfoVisible] = useState<boolean>(false)
 
-  const [lcState, setLcState] = useState<LifeCycleState>('Pending')
+  const [lifeCycleState, setLifeCycleState] =
+    useState<LifeCycleState>('PENDING')
   const [serialNum, setSerialNum] = useState<string>('')
 
   const [donor, setDonor] = useState<Account>(initAccountState)
-  const [donorQueried, setDonorQueried] = useState<boolean>(false)
   const [donorInfoVisible, setDonorInfoVisible] = useState<boolean>(false)
 
   const [recipient, setRecipient] = useState<Account>(initAccountState)
-  const [recipientQueried, setRecipientQueried] = useState<boolean>(false)
   const [recipientInfoVisible, setRecipientInfoVisible] =
     useState<boolean>(false)
 
@@ -85,80 +78,120 @@ export const AddEntryModal: React.FC<AddEntryModalProps> = ({ exit }) => {
     CreateAccountResponse,
     CreateAccountInput
   >(CreateAccount)
-  const [createDataEntry] = useMutation<BaseResponse, CreateDataEntryInput>(
-    CreateDataEntry
-  )
+  const [createDataEntry] = useMutation<
+    CreateDataEntryResponse,
+    CreateDataEntryInput
+  >(CreateDataEntry)
   const [createProduct] = useMutation<
     CreateProductResponse,
     CreateProductInput
   >(CreateProduct)
 
-  // update components when product changes
-  useEffect(() => {
-    if (donorQueried) setDonorInfoVisible(false)
-    if (productQueried) setProductInfoVisible(false)
-    if (recipientQueried) setRecipientInfoVisible(false)
-  }, [product, productQueried, donorQueried, recipientQueried])
-
   const mapErrors = (errors: BaseResponseError[]) =>
     errors.map((value) => value.message).join('\r\n')
 
   const submitDataEntry = async () => {
-    let productId: number | undefined = undefined
-    let donorAccountId: number | undefined = undefined
-    let recipientAccountId: number | undefined = undefined
+    if (serialNum === '') return setError('No serial number specified')
 
-    if (!product) return setError('No product specified')
-    else if (!product.productId) {
-      const { data } = await createProduct({ variables: { ...product } })
-      if (data) {
-        if (data.success === 'true') {
-          productId = data.productId
+    let selectedProductId = product.productId
+    let donorAccountId = donor.accountId
+    let recipientAccountId = recipient.accountId
+
+    switch (true) {
+      case product.model === '':
+        return setError('Invalid product model')
+      case product.manufacturer === '':
+        return setError('Invalid product manufacturer')
+      case product.productName === '':
+        return setError('Invalid product type')
+      case !selectedProductId:
+        const { data } = await createProduct({
+          variables: { input: { ...product } },
+        })
+        if (data && data.createProduct) {
+          const { success, productId } = data.createProduct
+          if (success === 'true') {
+            selectedProductId = productId
+          }
         }
-      }
     }
 
-    if (!donor) return setError('No donor account specified')
-    else if (!donor.accountId) {
-      const { data } = await createAccount({ variables: { ...donor } })
-      if (data) {
-        if (data.success === 'true') {
-          donorAccountId = data.accountId
-        } else if (data.errors) {
-          return setError(mapErrors(data.errors))
+    switch (true) {
+      case donor.name === '':
+        return setError('Invalid donor name')
+      case donor.phone === '':
+        return setError('Invalid donor phone')
+      case donor.addressLine1 === '':
+        return setError('Invalid donor address')
+      case donor.city === '':
+        return setError('Invalid donor city')
+      case donor.country === '':
+        return setError('Invalid donor country')
+      case donor.state === '':
+        return setError('Invalid donor state')
+      case donor.zip === '':
+        return setError('Invalid donor ZIP code')
+      case !donorAccountId:
+        const { data } = await createAccount({
+          variables: { input: { ...donor } },
+        })
+        if (data && data.createAccount) {
+          const { success, accountId } = data.createAccount
+          if (success === 'true') {
+            donorAccountId = accountId
+          }
         }
-      }
     }
 
-    if (!recipient) return setError('No recipient account specified')
-    else if (!recipient.accountId) {
-      const { data } = await createAccount({ variables: { ...recipient } })
-      if (data) {
-        if (data.success === 'true') {
-          recipientAccountId = data.accountId
-        } else if (data.errors) {
-          return setError(mapErrors(data.errors))
+    switch (true) {
+      case recipient.name === '':
+        return setError('Invalid recipient name')
+      case recipient.phone === '':
+        return setError('Invalid recipient phone')
+      case recipient.addressLine1 === '':
+        return setError('Invalid recipient address')
+      case recipient.city === '':
+        return setError('Invalid recipient city')
+      case recipient.country === '':
+        return setError('Invalid recipient country')
+      case recipient.state === '':
+        return setError('Invalid recipient state')
+      case recipient.zip === '':
+        return setError('Invalid recipient ZIP code')
+      case !recipientAccountId:
+        const { data } = await createAccount({
+          variables: { input: { ...recipient } },
+        })
+        if (data && data.createAccount) {
+          const { success, accountId } = data.createAccount
+          if (success === 'true') {
+            recipientAccountId = accountId
+          }
         }
-      }
     }
 
     const { data } = await createDataEntry({
       variables: {
-        lifeCycleState: lcState,
-        serialNumber: serialNum,
-        modified: new Date(),
-        productId: productId || product.productId || -1,
-        donorAccountId: donorAccountId || donor.accountId || -1,
-        recipientAccountId: recipientAccountId || recipient.accountId || -1,
+        input: {
+          lifeCycleState: lifeCycleState,
+          serialNumber: serialNum,
+          modified: new Date(),
+          // -1 signifies that I goofed up somewhere
+          productId: selectedProductId || -1,
+          donorAccountId: donorAccountId || -1,
+          recipientAccountId: recipientAccountId || -1,
+        },
       },
     })
 
-    if (data) {
-      if (data.success === 'true') {
+    if (data && data.createDataEntry) {
+      const { success, errors } = data.createDataEntry
+      if (success === 'true') {
         alert(`Added device: '${serialNum}'`)
+        setTimeout(() => setSerialNum(''), 0)
         return setError('')
-      } else if (data.errors) {
-        return setError(mapErrors(data.errors))
+      } else if (errors) {
+        return setError(mapErrors(errors))
       }
     }
 
@@ -168,9 +201,9 @@ export const AddEntryModal: React.FC<AddEntryModalProps> = ({ exit }) => {
   return (
     <Box sx={MODAL_BOX_STYLE}>
       <Center>
-        <Typography variant='h3'>Add Data Entry</Typography>
+        <Typography variant='h4'>Add Device Entry</Typography>
       </Center>
-      <div style={{ paddingBottom: '10px' }} />
+      <div style={{ paddingBottom: '20px' }} />
       {error !== '' && (
         <div className='Add-entry-error'>
           <Center>
@@ -188,53 +221,40 @@ export const AddEntryModal: React.FC<AddEntryModalProps> = ({ exit }) => {
           <Select
             labelId='lifecycle-select-label'
             id='lifecycle-select'
-            value={lcState}
+            value={lifeCycleState}
+            defaultValue={LIFECYCLE_STATES.Pending}
             label='LifeCycle State'
             onChange={(event) => {
               event.preventDefault()
-              setLcState(event.target.value as LifeCycleState)
+              setLifeCycleState(event.target.value as LifeCycleState)
             }}>
-            <MenuItem value='Pending'>Pending</MenuItem>
-            <MenuItem value='Received'>Received</MenuItem>
-            <MenuItem value='Problem'>Problem</MenuItem>
-            <MenuItem value='Distributed'>Distributed</MenuItem>
-            <MenuItem value='E-Waste Scrapped'>E-Waste Scrapped</MenuItem>
+            {Object.entries(LIFECYCLE_STATES).map(([key, value], index) => (
+              <MenuItem key={index} value={value}>
+                {key}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
       </Center>
       <Center>
         <FormControl required sx={{ m: 1, width: '50ch' }} variant='outlined'>
           <InputLabel htmlFor='model'>Product Model</InputLabel>
-          <QueryInput
-            apolloQuery={FindAllProductsMatchModel}
-            getOptionLabel={(option: Product) => option.model}
-            getQueryData={(data: FindAllProductsMatchModelResult) =>
-              data.findAllProductsMatchModel as readonly Product[]
-            }
-            setOptionValue={(option: Product, setValue) => {
-              setTimeout(() => setProduct(option), 0)
-              setTimeout(() => setProductQueried(true), 0)
-              setValue(option.model)
-            }}
-            inputProps={{
-              fullWidth: true,
-              id: 'model',
-              type: 'text',
-              label: 'Product Model',
-            }}
-            onQueryFail={() => setProductQueried(false)}
-          />
-          {!productQueried && (
-            <FormControlLabel
-              control={
-                <ExpandButton
-                  expand={productInfoVisible}
-                  onClick={() => setProductInfoVisible(!productInfoVisible)}
-                />
+          <QuerySelect
+            apolloQuery={FindAllProducts}
+            defaultValue={NEW_ITEM_MARKER}
+            getQueryData={(data: FindAllProductsResult) => data.findAllProducts}
+            getQueryDataValueLabel={(value: Product) => value.model}
+            onDataSelected={(value: Product | typeof NEW_ITEM_MARKER) => {
+              if (value !== NEW_ITEM_MARKER) {
+                setTimeout(() => setProductInfoVisible(false), 0)
+                setProduct(value)
+              } else {
+                setTimeout(() => setProductInfoVisible(true), 0)
+                setProduct({ ...product })
               }
-              label='Add New Product'
-            />
-          )}
+            }}
+            onQueryFail={() => setProductInfoVisible(true)}
+          />
         </FormControl>
       </Center>
       <Collapse in={productInfoVisible} timeout='auto' unmountOnExit>
@@ -245,19 +265,19 @@ export const AddEntryModal: React.FC<AddEntryModalProps> = ({ exit }) => {
                 required={productInfoVisible}
                 sx={{ m: 1, width: '50ch' }}
                 variant='outlined'>
-                <InputLabel htmlFor='product-name'>Product Type</InputLabel>
+                <InputLabel htmlFor='product-model'>Product Model</InputLabel>
                 <OutlinedInput
                   fullWidth
-                  id='product-name'
+                  id='product-model'
                   type='text'
-                  value={product.productName}
+                  value={product.model}
                   onChange={(event) => {
                     event.preventDefault()
                     let newProduct = { ...product }
-                    newProduct.productName = event.target.value
+                    newProduct.model = event.target.value
                     setProduct(newProduct)
                   }}
-                  label='Product Type'
+                  label='Product Model'
                 />
               </FormControl>
             </Center>
@@ -282,9 +302,30 @@ export const AddEntryModal: React.FC<AddEntryModalProps> = ({ exit }) => {
                 />
               </FormControl>
             </Center>
+            <Center>
+              <FormControl
+                required={productInfoVisible}
+                sx={{ m: 1, width: '50ch' }}
+                variant='outlined'>
+                <InputLabel htmlFor='product-name'>Product Type</InputLabel>
+                <OutlinedInput
+                  fullWidth
+                  id='product-name'
+                  type='text'
+                  value={product.productName}
+                  onChange={(event) => {
+                    event.preventDefault()
+                    let newProduct = { ...product }
+                    newProduct.productName = event.target.value
+                    setProduct(newProduct)
+                  }}
+                  label='Product Type'
+                />
+              </FormControl>
+            </Center>
           </Paper>
         </Center>
-        <div style={{ paddingBottom: '40px' }} />
+        <div style={{ paddingBottom: '20px' }} />
       </Collapse>
       <Center>
         <FormControl required sx={{ m: 1, width: '50ch' }} variant='outlined'>
@@ -304,43 +345,49 @@ export const AddEntryModal: React.FC<AddEntryModalProps> = ({ exit }) => {
       </Center>
       <Center>
         <FormControl required sx={{ m: 1, width: '50ch' }} variant='outlined'>
-          <InputLabel htmlFor='donorAccount'>{`Donor Account${
-            donorInfoVisible ? ' Name' : ''
-          }`}</InputLabel>
-          <QueryInput
-            apolloQuery={FindAllAccountsMatchName}
-            getOptionLabel={(option: Account) => option.name}
-            getQueryData={(data: FindAllAccountsMatchNameResult) =>
-              data.findAllAccountsMatchName as readonly Account[]
-            }
-            setOptionValue={(option: Account, setValue) => {
-              setTimeout(() => setDonor(option), 0)
-              setValue(option.name)
-            }}
-            inputProps={{
-              fullWidth: true,
-              id: 'donorAccount',
-              type: 'text',
-              label: `Donor Account${donorInfoVisible ? ' Name' : ''}`,
-            }}
-            onQueryFail={() => setDonorQueried(false)}
-          />
-          {!donorQueried && (
-            <FormControlLabel
-              control={
-                <ExpandButton
-                  expand={donorInfoVisible}
-                  onClick={() => setDonorInfoVisible(!donorInfoVisible)}
-                />
+          <InputLabel htmlFor='donorAccount'>Donor Account</InputLabel>
+          <QuerySelect
+            apolloQuery={FindAllAccounts}
+            defaultValue={NEW_ITEM_MARKER}
+            getQueryData={(data: FindAllAccountsResult) => data.findAllAccounts}
+            getQueryDataValueLabel={(value: Account) => value.name}
+            onDataSelected={(value: Account | typeof NEW_ITEM_MARKER) => {
+              if (value !== NEW_ITEM_MARKER) {
+                setTimeout(() => setDonorInfoVisible(false), 0)
+                setDonor(value)
+              } else {
+                setTimeout(() => setDonorInfoVisible(true), 0)
+                setDonor({ ...donor })
               }
-              label='Add New Account'
-            />
-          )}
+            }}
+            onQueryFail={() => setDonorInfoVisible(true)}
+          />
         </FormControl>
       </Center>
       <Collapse in={donorInfoVisible} timeout='auto' unmountOnExit>
         <Center>
           <Paper elevation={8}>
+            <Center>
+              <FormControl
+                required={donorInfoVisible}
+                sx={{ m: 1, width: '50ch' }}
+                variant='outlined'>
+                <InputLabel htmlFor='donor-name'>Account Name</InputLabel>
+                <OutlinedInput
+                  fullWidth
+                  id='donor-name'
+                  type='text'
+                  value={donor.name}
+                  onChange={(event) => {
+                    event.preventDefault()
+                    let newDonor = { ...donor }
+                    newDonor.name = event.target.value
+                    setDonor(newDonor)
+                  }}
+                  label='Account Name'
+                />
+              </FormControl>
+            </Center>
             <Center>
               <FormControl
                 required={donorInfoVisible}
@@ -494,47 +541,53 @@ export const AddEntryModal: React.FC<AddEntryModalProps> = ({ exit }) => {
             </Center>
           </Paper>
         </Center>
-        <div style={{ paddingBottom: '40px' }} />
+        <div style={{ paddingBottom: '20px' }} />
       </Collapse>
       <Center>
         <FormControl required sx={{ m: 1, width: '50ch' }} variant='outlined'>
-          <InputLabel htmlFor='recipientAccount'>
-            {`Recipient Account${recipientInfoVisible ? ' Name' : ''}`}
-          </InputLabel>
-          <QueryInput
-            apolloQuery={FindAllAccountsMatchName}
-            getOptionLabel={(option: Account) => option.name}
-            getQueryData={(data: FindAllAccountsMatchNameResult) =>
-              data.findAllAccountsMatchName as readonly Account[]
-            }
-            setOptionValue={(option: Account, setValue) => {
-              setTimeout(() => setRecipient(option), 0)
-              setValue(option.name)
-            }}
-            inputProps={{
-              fullWidth: true,
-              id: 'recipientAccount',
-              type: 'text',
-              label: `Recipient Account${recipientInfoVisible ? ' Name' : ''}`,
-            }}
-            onQueryFail={() => setRecipientQueried(false)}
-          />
-          {!recipientQueried && (
-            <FormControlLabel
-              control={
-                <ExpandButton
-                  expand={recipientInfoVisible}
-                  onClick={() => setRecipientInfoVisible(!recipientInfoVisible)}
-                />
+          <InputLabel htmlFor='recipientAccount'>Recipient Account</InputLabel>
+          <QuerySelect
+            apolloQuery={FindAllAccounts}
+            defaultValue={NEW_ITEM_MARKER}
+            getQueryData={(data: FindAllAccountsResult) => data.findAllAccounts}
+            getQueryDataValueLabel={(value: Account) => value.name}
+            onDataSelected={(value: Account | typeof NEW_ITEM_MARKER) => {
+              if (value !== NEW_ITEM_MARKER) {
+                setTimeout(() => setRecipientInfoVisible(false), 0)
+                setRecipient(value)
+              } else {
+                setTimeout(() => setRecipientInfoVisible(true), 0)
+                setRecipient({ ...recipient })
               }
-              label='Add New Account'
-            />
-          )}
+            }}
+            onQueryFail={() => setRecipientInfoVisible(true)}
+          />
         </FormControl>
       </Center>
       <Collapse in={recipientInfoVisible} timeout='auto' unmountOnExit>
         <Center>
           <Paper elevation={8}>
+            <Center>
+              <FormControl
+                required={recipientInfoVisible}
+                sx={{ m: 1, width: '50ch' }}
+                variant='outlined'>
+                <InputLabel htmlFor='recipient-name'>Account Name</InputLabel>
+                <OutlinedInput
+                  fullWidth
+                  id='recipient-name'
+                  type='text'
+                  value={recipient.name}
+                  onChange={(event) => {
+                    event.preventDefault()
+                    let newRecipient = { ...recipient }
+                    newRecipient.name = event.target.value
+                    setRecipient(newRecipient)
+                  }}
+                  label='Account Name'
+                />
+              </FormControl>
+            </Center>
             <Center>
               <FormControl
                 required={recipientInfoVisible}
@@ -688,9 +741,9 @@ export const AddEntryModal: React.FC<AddEntryModalProps> = ({ exit }) => {
             </Center>
           </Paper>
         </Center>
-        <div style={{ paddingBottom: '35px' }} />
+        <div style={{ paddingBottom: '30px' }} />
       </Collapse>
-      <div style={{ paddingTop: '15px' }} />
+      <div style={{ paddingTop: '5px' }} />
       <Center>
         <ButtonGroup sx={{ bottom: 0 }} variant='contained'>
           <Button color='success' onClick={submitDataEntry}>

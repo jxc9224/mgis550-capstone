@@ -18,15 +18,18 @@ export const NavBar: React.FC = () => {
     if (!session.user) navigate('/login')
   })
 
+  /*
+   <Button onClick={() => navigate('/audit')}>Audit Log</Button>
+    {session.user?.isAdministrator && (
+      <Button onClick={() => navigate('/admin')}>Admin Panel</Button>
+    )}
+   */
+
   return (
     <div className='Nav-bar'>
       <Center>
         <ButtonGroup variant='text'>
           <Button onClick={() => navigate('/')}>Home</Button>
-          <Button onClick={() => navigate('/audit')}>Audit Log</Button>
-          {session.user?.isAdministrator && (
-            <Button onClick={() => navigate('/admin')}>Admin Panel</Button>
-          )}
           <Button onClick={logout}>Logout</Button>
         </ButtonGroup>
       </Center>

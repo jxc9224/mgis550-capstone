@@ -1,6 +1,6 @@
 export type LifeCycleState =
-  | 'Distributed'
-  | 'E-Waste Scrapped'
-  | 'Pending'
-  | 'Problem'
-  | 'Received'
+  | 'DISTRIBUTED'
+  | 'EWASTE'
+  | 'PENDING'
+  | 'PROBLEM'
+  | 'RECEIVED'

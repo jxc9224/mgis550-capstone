@@ -39,11 +39,18 @@ export const LoginPage: React.FC = () => {
   const session = useAppSelector((state) => state.user)
 
   const [error, setError] = useState<string>('')
-  const [inputEmail, setInputEmail] = useState<string>('')
-  const [inputPassword, setInputPassword] = useState<string>('')
+
+  const [inputEmail, setInputEmail] = useState<string>(
+    localStorage.getItem('email') || ''
+  )
+  const [inputPassword, setInputPassword] = useState<string>(
+    localStorage.getItem('password') || ''
+  )
 
   const [loginLoading, setLoginLoading] = useState<boolean>(false)
-  const [rememberMeChecked, setRememberMeChecked] = useState<boolean>(false)
+  const [rememberMeChecked, setRememberMeChecked] = useState<boolean>(
+    localStorage.getItem('rememberme') === 'true'
+  )
 
   // if user's already logged in, redirect to home page
   useEffect(() => {
@@ -70,6 +77,24 @@ export const LoginPage: React.FC = () => {
       if (!loading && !success) {
         setTimeout(() => setErrClrPasswd(error || 'Invalid credentials'), 0)
         setLoginLoading(false)
+      } else {
+        if (rememberMeChecked) {
+          try {
+            localStorage.setItem('email', inputEmail)
+            localStorage.setItem('password', inputPassword)
+            localStorage.setItem('rememberme', 'true')
+          } catch {
+            // nothing
+          }
+        } else {
+          try {
+            localStorage.removeItem('email')
+            localStorage.removeItem('password')
+            localStorage.removeItem('rememberme')
+          } catch {
+            // nothing
+          }
+        }
       }
     })
 
@@ -104,7 +129,9 @@ export const LoginPage: React.FC = () => {
                 <FormControl sx={{ m: 1, width: '50ch' }} variant='outlined'>
                   <InputLabel htmlFor='email'>Email</InputLabel>
                   <OutlinedInput
+                    autoFocus
                     fullWidth
+                    required
                     id='email'
                     type='text'
                     value={inputEmail}
@@ -121,6 +148,7 @@ export const LoginPage: React.FC = () => {
                   <InputLabel htmlFor='password'>Password</InputLabel>
                   <OutlinedInput
                     fullWidth
+                    required
                     id='password'
                     type='password'
                     value={inputPassword}
@@ -128,6 +156,9 @@ export const LoginPage: React.FC = () => {
                       event.preventDefault()
                       setInputPassword(event.target.value)
                     }}
+                    onKeyPress={(event) =>
+                      event.key === 'Enter' && loginSubmit()
+                    }
                     label='Password'
                   />
                 </FormControl>

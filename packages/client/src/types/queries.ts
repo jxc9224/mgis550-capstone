@@ -12,6 +12,10 @@ export interface Account {
   zip: string
 }
 
+export interface FindAllAccountsResult {
+  findAllAccounts: Account[]
+}
+
 export interface FindAllAccountsMatchNameResult {
   findAllAccountsMatchName: Account[]
 }
@@ -38,7 +42,7 @@ export interface DataGridRow {
   entryId: number
   lifeCycleState: string
   serialNumber: string
-  modified: Date
+  modified: string
   productName: string
   manufacturer: string
   model: string
@@ -55,6 +59,10 @@ export interface Product {
   productName: string
   manufacturer: string
   model: string
+}
+
+export interface FindAllProductsResult {
+  findAllProducts: Product[]
 }
 
 export interface FindAllProductsMatchModelResult {

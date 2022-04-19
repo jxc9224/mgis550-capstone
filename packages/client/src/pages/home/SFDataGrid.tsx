@@ -1,6 +1,6 @@
 import React, { useState, Suspense } from 'react'
 import { useQuery } from '@apollo/client'
-import { DataGrid } from '@mui/x-data-grid'
+import { DataGrid, GridSelectionModel } from '@mui/x-data-grid'
 import { Button, ButtonGroup, Modal } from '@mui/material'
 
 import { GRID_COLUMNS } from './constants'
@@ -11,10 +11,8 @@ import { FindAllDataEntriesInGridFormat } from '../../modules/entries'
 import type { FindAllDataEntriesInGridFormatResult } from '../../types'
 
 const AddEntryModal = React.lazy(() => import('./AddEntryModal'))
-const EditEntryModal = React.lazy(() => import('./EditEntryModal'))
-const DeleteEntryModal = React.lazy(() => import('./DeleteEntryModal'))
 
-const ROWS_PER_PAGE = 10
+const ROWS_PER_PAGE = 6
 
 export const SFDataGrid: React.FC = () => {
   const session = useAppSelector((state) => state.user)
@@ -22,6 +20,8 @@ export const SFDataGrid: React.FC = () => {
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false)
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false)
+
+  const [selectedRows, setSelectedRows] = React.useState<GridSelectionModel>([])
 
   const { data, loading, error } =
     useQuery<FindAllDataEntriesInGridFormatResult>(
@@ -50,39 +50,33 @@ export const SFDataGrid: React.FC = () => {
       </div>
     )
 
-  const closeAddModal = () => setAddModalOpen(false)
-  const closeEditModal = () => setEditModalOpen(false)
-  const closeDeleteModal = () => setDeleteModalOpen(false)
+  const getDateString = (isoString: string) => isoString.split('T')[0]
 
   const entryRows = data.findAllDataEntriesInGridFormat.map((value) => {
-    const { modified, ...entry } = value
-    return { modified: modified.toISOString(), ...entry }
+    const { entryId, modified, ...entry } = value
+    return { id: entryId, modified: getDateString(modified), ...entry }
   })
 
   return (
     <div className='SF-data-grid-active'>
-      <Center>
-        <ButtonGroup variant='text'>
-          <Button onClick={() => setAddModalOpen(true)}>Add Data</Button>
-          {session.user.isAdministrator && (
-            <Button onClick={() => setEditModalOpen(true)}>Edit Data</Button>
-          )}
-          {session.user.isAdministrator && (
-            <Button onClick={() => setDeleteModalOpen(true)}>
-              Delete Data
-            </Button>
-          )}
-        </ButtonGroup>
-      </Center>
+      <ButtonGroup variant='text'>
+        <Button onClick={() => setAddModalOpen(true)}>Add Data</Button>
+        {session.user.isAdministrator && (
+          <Button onClick={() => setEditModalOpen(true)}>Edit Data</Button>
+        )}
+        {session.user.isAdministrator && (
+          <Button onClick={() => setDeleteModalOpen(true)}>Delete Data</Button>
+        )}
+      </ButtonGroup>
       <Suspense fallback={<div />}>
-        <Modal open={addModalOpen} onClose={closeAddModal}>
-          <AddEntryModal exit={closeAddModal} />
+        <Modal open={addModalOpen} onClose={() => setAddModalOpen(false)}>
+          <AddEntryModal exit={() => setAddModalOpen(false)} />
         </Modal>
-        <Modal open={editModalOpen} onClose={closeEditModal}>
-          <EditEntryModal exit={closeEditModal} />
+        <Modal open={editModalOpen} onClose={() => setEditModalOpen(false)}>
+          <div />
         </Modal>
-        <Modal open={deleteModalOpen} onClose={closeDeleteModal}>
-          <DeleteEntryModal exit={closeDeleteModal} />
+        <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)}>
+          <div />
         </Modal>
       </Suspense>
       <Center>
@@ -92,7 +86,9 @@ export const SFDataGrid: React.FC = () => {
           pageSize={ROWS_PER_PAGE}
           rows={entryRows}
           rowsPerPageOptions={[ROWS_PER_PAGE]}
-          sx={{ height: 550, width: 900 }}
+          selectionModel={selectedRows}
+          onSelectionModelChange={(selected) => setSelectedRows(selected)}
+          sx={{ height: 450, width: 900 }}
         />
       </Center>
     </div>

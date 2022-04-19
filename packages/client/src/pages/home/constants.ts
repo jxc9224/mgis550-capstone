@@ -1,3 +1,5 @@
+import { LifeCycleState } from '../../types/shared'
+
 export const MODAL_BOX_STYLE = {
   position: 'absolute',
   top: '50%',
@@ -13,15 +15,27 @@ export const MODAL_BOX_STYLE = {
   overflow: 'scroll',
 }
 
+export const NEW_ITEM_MARKER = '__new_query_item'
+
+export const LIFECYCLE_STATES: {
+  [key: string]: LifeCycleState
+} = {
+  Pending: 'PENDING',
+  Received: 'RECEIVED',
+  Problem: 'PROBLEM',
+  Distributed: 'DISTRIBUTED',
+  'E-Waste (Scrapped)': 'EWASTE',
+}
+
 export const GRID_COLUMNS = [
   {
-    field: 'entryId',
-    headerName: 'ID Tag',
-    width: 70,
+    field: 'id',
+    headerName: 'ID',
+    width: 95,
   },
   {
     field: 'productName',
-    headerName: 'Product',
+    headerName: 'Product Type',
     width: 130,
   },
   {
@@ -32,12 +46,12 @@ export const GRID_COLUMNS = [
   {
     field: 'model',
     headerName: 'Model',
-    width: 260,
+    width: 225,
   },
   {
     field: 'lifeCycleState',
-    headerName: 'LC Status',
-    width: 130,
+    headerName: 'LifeCycle Status',
+    width: 145,
   },
   {
     field: 'modified',
@@ -53,5 +67,10 @@ export const GRID_COLUMNS = [
     field: 'recipientAccount',
     headerName: 'Recipient Account',
     width: 175,
+  },
+  {
+    field: 'serialNumber',
+    headerName: 'Serial Number',
+    width: 160,
   },
 ]
