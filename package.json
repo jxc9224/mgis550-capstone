@@ -1,0 +1,13 @@
+{
+  "name": "the-shore-foundation-capstone",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "lerna exec --parallel npm run start"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "lerna": "^4.0.0",
+    "nginx": "^1.0.6"
+  }
+}

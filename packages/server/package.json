@@ -1,0 +1,24 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "the-shore-foundation-capstone-server",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "John Carr <jxc9224@rit.edu>",
+  "license": "ISC",
+  "dependencies": {
+    "apollo-server": "^3.6.6",
+    "apollo-server-express": "^3.6.6",
+    "graphql-scalars": "^1.16.0",
+    "sequelize": "^6.17.0",
+    "sqlite3": "^4.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15",
+    "ts-node": "^10.7.0"
+  }
+}

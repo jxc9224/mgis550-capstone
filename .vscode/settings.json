@@ -1,0 +1,14 @@
+{
+  "git.ignoreLimitWarning": true,
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "Todos",
+      "database": "${workspaceFolder:todo-demo}/packages/server/database.db"
+    }
+  ],
+  "sqltools.useNodeRuntime": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+}
