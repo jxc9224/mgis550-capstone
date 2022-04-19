@@ -61,3 +61,18 @@ export interface CreateProductResponse {
     errors?: BaseResponseError[]
   }
 }
+
+export interface UpdateDataEntryInput {
+  input: {
+    lifeCycleState?: LifeCycleState
+    serialNumber?: string
+    modified?: Date
+    productId?: number
+    donorAccountId?: number
+    recipientAccountId?: number
+  }
+}
+
+export interface UpdateDataEntryResponse {
+  createDataEntry?: BaseResponse
+}

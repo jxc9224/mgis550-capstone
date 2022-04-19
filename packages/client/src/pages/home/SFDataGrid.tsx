@@ -8,9 +8,13 @@ import { useAppSelector } from '../../app/hooks'
 import { Center, ErrorMessage } from '../../components'
 import { FindAllDataEntriesInGridFormat } from '../../modules/entries'
 
-import type { FindAllDataEntriesInGridFormatResult } from '../../types'
+import type {
+  DataGridModelRow,
+  FindAllDataEntriesInGridFormatResult,
+} from '../../types'
 
 const AddEntryModal = React.lazy(() => import('./AddEntryModal'))
+const EditEntryModal = React.lazy(() => import('./EditEntryModal'))
 
 const ROWS_PER_PAGE = 6
 
@@ -21,6 +25,7 @@ export const SFDataGrid: React.FC = () => {
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false)
 
+  const [entryRows, setEntryRows] = React.useState<DataGridModelRow[]>()
   const [selectedRows, setSelectedRows] = React.useState<GridSelectionModel>([])
 
   const { data, loading, error } =
@@ -52,45 +57,70 @@ export const SFDataGrid: React.FC = () => {
 
   const getDateString = (isoString: string) => isoString.split('T')[0]
 
-  const entryRows = data.findAllDataEntriesInGridFormat.map((value) => {
-    const { entryId, modified, ...entry } = value
-    return { id: entryId, modified: getDateString(modified), ...entry }
-  })
+  if (!entryRows) {
+    setEntryRows(
+      data.findAllDataEntriesInGridFormat.map((value) => {
+        const { entryId, modified, ...entry } = value
+        return { id: entryId, modified: getDateString(modified), ...entry }
+      })
+    )
+  }
 
   return (
     <div className='SF-data-grid-active'>
-      <ButtonGroup variant='text'>
-        <Button onClick={() => setAddModalOpen(true)}>Add Data</Button>
-        {session.user.isAdministrator && (
-          <Button onClick={() => setEditModalOpen(true)}>Edit Data</Button>
-        )}
-        {session.user.isAdministrator && (
-          <Button onClick={() => setDeleteModalOpen(true)}>Delete Data</Button>
-        )}
-      </ButtonGroup>
-      <Suspense fallback={<div />}>
-        <Modal open={addModalOpen} onClose={() => setAddModalOpen(false)}>
-          <AddEntryModal exit={() => setAddModalOpen(false)} />
-        </Modal>
-        <Modal open={editModalOpen} onClose={() => setEditModalOpen(false)}>
-          <div />
-        </Modal>
-        <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)}>
-          <div />
-        </Modal>
-      </Suspense>
-      <Center>
-        <DataGrid
-          checkboxSelection
-          columns={GRID_COLUMNS}
-          pageSize={ROWS_PER_PAGE}
-          rows={entryRows}
-          rowsPerPageOptions={[ROWS_PER_PAGE]}
-          selectionModel={selectedRows}
-          onSelectionModelChange={(selected) => setSelectedRows(selected)}
-          sx={{ height: 450, width: 900 }}
-        />
-      </Center>
+      {entryRows && (
+        <div className='SF-data-grid-internal'>
+          <ButtonGroup variant='text'>
+            <Button onClick={() => setAddModalOpen(true)}>Add Data</Button>
+            {session.user.isAdministrator && (
+              <Button onClick={() => setEditModalOpen(selectedRows.length > 0)}>
+                Edit Data
+              </Button>
+            )}
+            {session.user.isAdministrator && (
+              <Button onClick={() => setDeleteModalOpen(true)}>
+                Delete Data
+              </Button>
+            )}
+          </ButtonGroup>
+          <Suspense fallback={<div />}>
+            <Modal open={addModalOpen} onClose={() => setAddModalOpen(false)}>
+              <AddEntryModal exit={() => setAddModalOpen(false)} />
+            </Modal>
+            <Modal open={editModalOpen} onClose={() => setEditModalOpen(false)}>
+              <EditEntryModal
+                entries={entryRows}
+                selectionModel={selectedRows}
+                updateDataEntry={(entry) => {
+                  setEntryRows(
+                    entryRows.map((value) =>
+                      value.id === entry.id ? entry : value
+                    )
+                  )
+                }}
+                exit={() => setEditModalOpen(false)}
+              />
+            </Modal>
+            <Modal
+              open={deleteModalOpen}
+              onClose={() => setDeleteModalOpen(false)}>
+              <div />
+            </Modal>
+          </Suspense>
+          <Center>
+            <DataGrid
+              checkboxSelection
+              columns={GRID_COLUMNS}
+              pageSize={ROWS_PER_PAGE}
+              rows={entryRows}
+              rowsPerPageOptions={[ROWS_PER_PAGE]}
+              selectionModel={selectedRows}
+              onSelectionModelChange={(selected) => setSelectedRows(selected)}
+              sx={{ height: 450, width: 900 }}
+            />
+          </Center>
+        </div>
+      )}
     </div>
   )
 }

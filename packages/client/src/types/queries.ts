@@ -16,6 +16,10 @@ export interface FindAllAccountsResult {
   findAllAccounts: Account[]
 }
 
+export interface FindFirstAccountMatchNameResult {
+  findFirstAccountMatchName: Account
+}
+
 export interface FindAllAccountsMatchNameResult {
   findAllAccountsMatchName: Account[]
 }
@@ -36,6 +40,18 @@ export interface FindDataEntryByIdResult {
 
 export interface FindAllDataEntriesResult {
   findAllDataEntries: DataEntry[]
+}
+
+export interface DataGridModelRow {
+  id: number
+  lifeCycleState: string
+  serialNumber: string
+  modified: string
+  productName: string
+  manufacturer: string
+  model: string
+  donorAccount: string
+  recipientAccount: string
 }
 
 export interface DataGridRow {
