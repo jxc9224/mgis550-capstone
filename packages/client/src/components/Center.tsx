@@ -1,3 +1,8 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import React, { ReactNode } from 'react'
 import { Box } from '@mui/material'
 
