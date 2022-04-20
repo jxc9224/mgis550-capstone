@@ -1,3 +1,8 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import { DateTimeResolver } from 'graphql-scalars'
 import { Account, DataEntry, Product, User } from '../model.js'
 

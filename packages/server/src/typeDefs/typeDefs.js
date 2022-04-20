@@ -1,3 +1,8 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import { gql } from 'apollo-server-express'
 
 export const typeDefs = gql`

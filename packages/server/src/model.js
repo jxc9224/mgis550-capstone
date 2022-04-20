@@ -1,3 +1,8 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import { Sequelize, DataTypes, Model } from 'sequelize'
 
 const sequelize = new Sequelize('sqlite:./data/mock-db.sqlite')

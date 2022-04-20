@@ -1,3 +1,8 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import React, { Suspense } from 'react'
 import { Divider, Paper, Typography } from '@mui/material'
 

@@ -1,3 +1,8 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import { LifeCycleState } from './shared'
 
 export interface BaseResponseError {
@@ -63,6 +68,7 @@ export interface CreateProductResponse {
 }
 
 export interface UpdateDataEntryInput {
+  entryId: number
   input: {
     lifeCycleState?: LifeCycleState
     serialNumber?: string

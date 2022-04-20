@@ -1,3 +1,8 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, ButtonGroup } from '@mui/material'

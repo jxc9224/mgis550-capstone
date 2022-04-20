@@ -1,3 +1,8 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import { ApolloServer } from 'apollo-server'
 
 import typeDefs from './typeDefs/typeDefs.js'

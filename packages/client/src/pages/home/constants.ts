@@ -1,4 +1,12 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import { LifeCycleState } from '../../types/shared'
+
+export const getDateStringFromISO = (isoString: string) =>
+  new Date(isoString).toLocaleString()
 
 export const MODAL_BOX_STYLE = {
   position: 'absolute',
@@ -46,7 +54,7 @@ export const GRID_COLUMNS = [
   {
     field: 'model',
     headerName: 'Model',
-    width: 225,
+    width: 200,
   },
   {
     field: 'lifeCycleState',
@@ -56,7 +64,7 @@ export const GRID_COLUMNS = [
   {
     field: 'modified',
     headerName: 'Last Updated',
-    width: 160,
+    width: 180,
   },
   {
     field: 'donorAccount',

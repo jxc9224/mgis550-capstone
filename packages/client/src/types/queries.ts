@@ -1,3 +1,8 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import { LifeCycleState } from './shared'
 
 export interface Account {
@@ -12,16 +17,20 @@ export interface Account {
   zip: string
 }
 
+export interface AccountQueryRow extends Account {
+  accountId: number
+}
+
 export interface FindAllAccountsResult {
-  findAllAccounts: Account[]
+  findAllAccounts: AccountQueryRow[]
 }
 
 export interface FindFirstAccountMatchNameResult {
-  findFirstAccountMatchName: Account
+  findFirstAccountMatchName: AccountQueryRow
 }
 
 export interface FindAllAccountsMatchNameResult {
-  findAllAccountsMatchName: Account[]
+  findAllAccountsMatchName: AccountQueryRow[]
 }
 
 export interface DataEntry {
@@ -34,36 +43,34 @@ export interface DataEntry {
   recipientAccountId: number
 }
 
+export interface DataEntryQueryRow extends DataEntry {
+  entryId: number
+}
+
 export interface FindDataEntryByIdResult {
-  findDataEntryById: DataEntry
+  findDataEntryById: DataEntryQueryRow
 }
 
 export interface FindAllDataEntriesResult {
-  findAllDataEntries: DataEntry[]
+  findAllDataEntries: DataEntryQueryRow[]
 }
 
-export interface DataGridModelRow {
-  id: number
-  lifeCycleState: string
-  serialNumber: string
-  modified: string
-  productName: string
-  manufacturer: string
-  model: string
-  donorAccount: string
-  recipientAccount: string
-}
-
-export interface DataGridRow {
+export interface DataGridRow
+  extends Omit<
+    DataEntry,
+    'modified' | 'productId' | 'donorAccountId' | 'recipientAccountId'
+  > {
   entryId: number
-  lifeCycleState: string
-  serialNumber: string
   modified: string
   productName: string
   manufacturer: string
   model: string
   donorAccount: string
   recipientAccount: string
+}
+
+export interface DataGridModelRow extends Omit<DataGridRow, 'entryId'> {
+  id: number
 }
 
 export interface FindAllDataEntriesInGridFormatResult {

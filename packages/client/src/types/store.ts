@@ -1,3 +1,8 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import { ThunkAction, Action } from '@reduxjs/toolkit'
 import store from '../state'
 

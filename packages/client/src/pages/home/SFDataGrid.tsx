@@ -1,9 +1,14 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import React, { useState, Suspense } from 'react'
 import { useQuery } from '@apollo/client'
 import { DataGrid, GridSelectionModel } from '@mui/x-data-grid'
 import { Button, ButtonGroup, Modal } from '@mui/material'
 
-import { GRID_COLUMNS } from './constants'
+import { GRID_COLUMNS, getDateStringFromISO } from './constants'
 import { useAppSelector } from '../../app/hooks'
 import { Center, ErrorMessage } from '../../components'
 import { FindAllDataEntriesInGridFormat } from '../../modules/entries'
@@ -23,7 +28,6 @@ export const SFDataGrid: React.FC = () => {
 
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false)
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false)
-  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false)
 
   const [entryRows, setEntryRows] = React.useState<DataGridModelRow[]>()
   const [selectedRows, setSelectedRows] = React.useState<GridSelectionModel>([])
@@ -55,13 +59,15 @@ export const SFDataGrid: React.FC = () => {
       </div>
     )
 
-  const getDateString = (isoString: string) => isoString.split('T')[0]
-
   if (!entryRows) {
     setEntryRows(
       data.findAllDataEntriesInGridFormat.map((value) => {
         const { entryId, modified, ...entry } = value
-        return { id: entryId, modified: getDateString(modified), ...entry }
+        return {
+          id: entryId,
+          modified: getDateStringFromISO(modified),
+          ...entry,
+        }
       })
     )
   }
@@ -78,7 +84,10 @@ export const SFDataGrid: React.FC = () => {
               </Button>
             )}
             {session.user.isAdministrator && (
-              <Button onClick={() => setDeleteModalOpen(true)}>
+              <Button
+                onClick={() =>
+                  alert(`The selected items have been requested for deletion`)
+                }>
                 Delete Data
               </Button>
             )}
@@ -100,11 +109,6 @@ export const SFDataGrid: React.FC = () => {
                 }}
                 exit={() => setEditModalOpen(false)}
               />
-            </Modal>
-            <Modal
-              open={deleteModalOpen}
-              onClose={() => setDeleteModalOpen(false)}>
-              <div />
             </Modal>
           </Suspense>
           <Center>

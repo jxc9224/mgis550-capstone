@@ -1,22 +1,34 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import React from 'react'
 import { Select, MenuItem } from '@mui/material'
 import { DocumentNode, useQuery } from '@apollo/client'
 
+const ADD_NEW_LABEL = `Add new...`
+const NO_RESULTS_LABEL = `No results`
+
 export interface QuerySelectProps {
   apolloQuery: DocumentNode
-  defaultValue: string | number | readonly string[]
+  defaultValue?: string | number | readonly string[]
+  defaultValueLabel?: string
+  noResultsLabel?: string
   getQueryData: (data: any) => any[] | undefined
   getQueryDataValueLabel: (value: any) => string
   onDataSelected: (value?: any) => void
-  onQueryFail: () => void
+  onQueryFail?: () => void
 }
 
 export const QuerySelect: React.FC<QuerySelectProps> = ({
   apolloQuery,
-  defaultValue,
   getQueryData,
   getQueryDataValueLabel,
   onDataSelected,
+  defaultValue,
+  defaultValueLabel,
+  noResultsLabel,
   onQueryFail,
 }) => {
   const { data, loading, error } = useQuery(apolloQuery)
@@ -26,11 +38,13 @@ export const QuerySelect: React.FC<QuerySelectProps> = ({
 
   const queryData = data !== undefined && getQueryData(data)
   if (!queryData) {
-    onQueryFail()
+    if (onQueryFail) onQueryFail()
     return (
       <Select onChange={(event) => selectData(event.target.value)}>
         <MenuItem key={0} value={defaultValue}>
-          Add new...
+          {defaultValue
+            ? defaultValueLabel || ADD_NEW_LABEL
+            : noResultsLabel || NO_RESULTS_LABEL}
         </MenuItem>
       </Select>
     )
@@ -46,9 +60,11 @@ export const QuerySelect: React.FC<QuerySelectProps> = ({
 
   return (
     <Select onChange={(event) => selectData(event.target.value)}>
-      <MenuItem key={0} value={defaultValue}>
-        Add new...
-      </MenuItem>
+      {defaultValue && (
+        <MenuItem key={0} value={defaultValue}>
+          {defaultValueLabel || ADD_NEW_LABEL}
+        </MenuItem>
+      )}
       {queryData.map((value, index) => {
         return (
           <MenuItem key={index + 1} value={index}>

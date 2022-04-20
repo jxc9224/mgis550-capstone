@@ -1,9 +1,14 @@
+/**
+ * @author John Carr <jxc9224@rit.edu>
+ * @license MIT
+ */
+
 import React, { Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import { Loading } from './components'
 
-const Admin = React.lazy(() => import('./pages/admin'))
+const Admin = React.lazy(() => import('./pages/admin')) // never got around to this :-(
 const Home = React.lazy(() => import('./pages/home'))
 const Login = React.lazy(() => import('./pages/login'))
 
